@@ -37,6 +37,6 @@ bulkWriteOrderedPar    6.0
 
 ## Observations
 1. In every case the concurrent version produces better throughput then the serial.
-2. `bulkWriteOrdered` performs (slightly) better then `bulkWriteUnOrdered` this remains the case for the parallel versions as well. 
+2. `bulkWriteOrdered` performs (slightly) better then `bulkWriteUnOrdered`. This remains true for the parallel versions. 
 3. `insertMany` is similar to the bulk operations and is better when done in parallel. 
  
