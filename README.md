@@ -7,16 +7,17 @@ in JSON format
 
 ## The flavours
 
-* `insertOne` translates to `MongoCollection.insertOne`
+* `insertOne` maps to `MongoCollection.insertOne`
 * `insertOnePar` a concurrent version of `insertOne` using Java 8 parallel stream
-* `insertMany` translates to `MongoCollection.insertMany`
+* `insertMany` maps to `MongoCollection.insertMany`
 * `insertManyPar` a concurrent version of `insertMany` using Java 8 parallel stream with custom batching of the input documents
-* `bulkWriteOrdered` translates to `MongoCollection.bulkWrite` with `BulkWriteOptions().ordered(true)`
+* `bulkWriteOrdered` maps to `MongoCollection.bulkWrite` with `BulkWriteOptions().ordered(true)`
 * `bulkWriteOrderedPar` a concurrent version of `bulkWriteOrdered`using Java 8 parallel stream with custom batching of the input documents
-* `bulkWriteUnOrdered` translates to `MongoCollection.bulkWrite` with `BulkWriteOptions().ordered(false)`
+* `bulkWriteUnOrdered` maps to `MongoCollection.bulkWrite` with `BulkWriteOptions().ordered(false)`
 * `bulkWriteUnOrderedPar` a concurrent version of `bulkWriteUnOrdered`using Java 8 parallel stream with custom batching of the input documents
 
 ## Methodology
+Local instance of MongoDB, default concerns.
 Each flavour is run multiple times, before each run the collection is dropped. The duration of each run is recorded and the last N runs are averaged to produce a TPS number.    
 
 ## Numbers
