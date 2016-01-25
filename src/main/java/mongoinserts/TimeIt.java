@@ -1,5 +1,7 @@
 package mongoinserts;
 
+import java.util.concurrent.TimeUnit;
+
 import static java.lang.System.currentTimeMillis;
 
 /**
@@ -13,9 +15,15 @@ public class TimeIt {
     }
 
     public static long timeIt(CodeBlock block) throws Exception {
-        long start = currentTimeMillis();
+        return timeIt(block, TimeUnit.MILLISECONDS);
+    }
+
+
+    public static long timeIt(CodeBlock block, TimeUnit timeUnit) throws Exception {
+        long start = System.nanoTime();
         block.invoke();
-        return currentTimeMillis() - start;
+        long stop = System.nanoTime();
+        return timeUnit.convert(stop - start, TimeUnit.NANOSECONDS);
     }
 
 
