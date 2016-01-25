@@ -28,10 +28,13 @@ Consequently all results here are normalized by the slowest result which is `ins
 ```
 insertOne              1.0
 insertOnePar           3.4
+
 insertMany             2.6
 insertManyPar          6.2
+
 bulkWriteUnordered     2.5
 bulkWriteUnorderedPar  5.7
+
 bulkWriteOrdered       2.7
 bulkWriteOrderedPar    6.0
 ```
