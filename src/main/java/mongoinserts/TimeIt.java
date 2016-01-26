@@ -2,8 +2,6 @@ package mongoinserts;
 
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.currentTimeMillis;
-
 /**
  * Created by David Soroko on 22/01/2016.
  */
