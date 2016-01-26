@@ -10,8 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static mongoinserts.TimeIt.timeIt;
-import static mongoinserts.TimeIt.tps;
+import static mongoinserts.TimeIt.throughput;
 
 /**
  * Created by David Soroko on 14/01/2016.
@@ -21,7 +20,7 @@ public class Inserts {
     private Env env;
     private Data data;
 
-    private final Map<String, List<Long>> stats = new ConcurrentHashMap<>();
+    private final Map<String, List<Double>> stats = new ConcurrentHashMap<>();
 
     public Inserts() throws Exception {
         env = new Env();
@@ -37,64 +36,70 @@ public class Inserts {
     }
 
     public void bulkWriteOrdered() throws Exception {
-        updateStats("bulkWriteOrdered", timeIt(() ->
-                data.bulkWrite(new BulkWriteOptions().ordered(true))));
+        updateStats("bulkWriteOrdered", throughput(
+                data.size(),
+                () -> data.bulkWrite(new BulkWriteOptions().ordered(true))));
     }
 
     public void bulkWriteOrderedPar() throws Exception {
         Stream<List<WriteModel<Document>>> docs = data.batchedStream(data.documentModels());
-        updateStats("bulkWriteOrderedPar", timeIt(() ->
-                docs.parallel().forEach(list -> data.bulkWrite(list, new BulkWriteOptions().ordered(true)))));
+        updateStats("bulkWriteOrderedPar", throughput(
+                data.size(),
+                () -> docs.parallel().forEach(batch -> data.bulkWrite(batch, new BulkWriteOptions().ordered(true)))));
     }
 
 
     public void bulkWriteUnordered() throws Exception {
-        updateStats("bulkWriteUnordered", timeIt(() ->
-                data.bulkWrite(new BulkWriteOptions().ordered(false))));
+        updateStats("bulkWriteUnordered", throughput(
+                data.size(),
+                () -> data.bulkWrite(new BulkWriteOptions().ordered(false))));
     }
 
     public void bulkWriteUnorderedPar() throws Exception {
         Stream<List<WriteModel<Document>>> docs = data.batchedStream(data.documentModels());
-        updateStats("bulkWriteUnorderedPar", timeIt(() ->
-                docs.parallel().forEach(list -> data.bulkWrite(list, new BulkWriteOptions().ordered(false)))));
+        updateStats("bulkWriteUnorderedPar", throughput(
+                data.size(),
+                () -> docs.parallel().forEach(batch -> data.bulkWrite(batch, new BulkWriteOptions().ordered(false)))));
     }
 
 
     public void insertMany() throws Exception {
-        updateStats("insertMany", timeIt(() ->
-                data.insertMany(data.documents())));
+        updateStats("insertMany", throughput(
+                data.size(),
+                () -> data.insertMany(data.documents())));
     }
 
 
     public void insertManyPar() throws Exception {
         Stream<List<Document>> docs = data.batchedStream(data.documents());
-        updateStats("insertManyPar", timeIt(() ->
-                docs.parallel().forEach(data::insertMany)));
+        updateStats("insertManyPar", throughput(
+                data.size(),
+                () -> docs.parallel().forEach(data::insertMany)));
     }
 
     public void insertOne() throws Exception {
-        updateStats("insertOne", timeIt(() ->
-                data.documents().stream().forEach(data::insertOne)));
+        updateStats("insertOne", throughput(
+                data.size(),
+                () -> data.documents().stream().forEach(data::insertOne)));
     }
 
     public void insertOnePar() throws Exception {
-        updateStats("insertOnePar", timeIt(() ->
-                data.documents().parallelStream().forEach(data::insertOne)));
+        updateStats("insertOnePar", throughput(
+                data.size(),
+                () -> data.documents().parallelStream().forEach(data::insertOne)));
 
     }
 
     public void printStats(int skip) {
         stats.keySet().stream().sorted().forEach(testName -> {
-                    int average = (int) stats.get(testName).stream().skip(skip).mapToLong(Long::longValue).average().getAsDouble();
-                    System.out.printf(
-                            "%s %d documents in %d msec. [%.0f doc/sec.]\n",
-                            testName, data.size(), average, tps(average, data.size()));
+                    double average = stats.get(testName).stream().skip(skip).mapToDouble(Double::doubleValue).average().getAsDouble();
+                    System.out.printf("%s %d documents [%.0f doc/sec.]\n", testName, data.size(), average);
                 }
         );
     }
 
-    private void updateStats(String testName, long duration) {
-        stats.computeIfAbsent(testName, v -> new ArrayList<>()).add(duration);
+    private void updateStats(String name, double throughput) {
+        stats.computeIfAbsent(name, v -> new ArrayList<>()).add(throughput);
     }
 
     public static void main(String[] args) throws Exception {
